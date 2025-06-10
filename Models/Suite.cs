@@ -32,12 +32,7 @@ namespace SistemaHospedagem.Models
             [TipoSuite.Presidencial] = 600m
         };
 
-        // Construtor estático para executar statements de inicialização
-        static Suite()
-        {
-            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("pt-BR");
-            CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("pt-BR");
-        }
+        private static readonly CultureInfo PtBr = new("pt-BR");
 
         // Propriedades
         public Guid Id { get; } = Guid.NewGuid();
@@ -82,7 +77,7 @@ namespace SistemaHospedagem.Models
         // ToString override para exibir informações da suíte
         public override string ToString()
         {
-            return $"{Tipo} - Capacidade: {Capacidade} - Preço: {PrecoDiaria:C} - Disponível: {Disponivel}";
+            return $"{Tipo} - Capacidade: {Capacidade} - Preço: {PrecoDiaria.ToString("C", PtBr)} - Disponível: {Disponivel}";
         }
     }
 }
