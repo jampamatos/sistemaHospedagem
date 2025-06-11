@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Net;
+
 namespace SistemaHospedagem.Models
 {
     public class Reserva
     {
-        private static int _contador = 0;
         public Guid Id { get; } = Guid.NewGuid();
 
         public Suite Suite { get; private set; }
@@ -37,9 +36,8 @@ namespace SistemaHospedagem.Models
             DataCheckIn = ParsePtBrDateTime(checkIn, nameof(checkIn));
             DataCheckOut = ParsePtBrDateTime(checkOut, nameof(checkOut));
 
-            if (DataCheckOut <= DataCheckIn) throw new ArgumentException("Data de check-out deve ser posterior à data de check-in.", nameof(checkOut));
-
-            _contador++;
+            if (DataCheckOut <= DataCheckIn)
+                throw new ArgumentException("Data de check-out deve ser posterior à data de check-in.", nameof(checkOut));
         }
 
         public void CadastrarHospedes(IEnumerable<Hospede> hospedes)

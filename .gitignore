@@ -1,0 +1,10 @@
+# Ignore build output
+bin/
+obj/
+*.user
+*.rsuser
+*.suo
+*.userprefs
+*.cache
+*.pdb
+*.DS_Store
