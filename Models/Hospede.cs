@@ -27,7 +27,7 @@ namespace SistemaHospedagem.Models
             }
         }
 
-        // Telefone deve ser no formato (XX)XXXX-XXXX ou XXXXXXXXXX
+        // Telefone deve ser no formato (XX)XXXXX-XXXX ou XXXXXXXXXXX
         private string _telefone = "";
         public string Telefone
         {
@@ -52,7 +52,7 @@ namespace SistemaHospedagem.Models
 
         // Regex para extrair dígitos e para validar o telefone
         private static readonly Regex _naoDigitos      = new(@"[^\d]", RegexOptions.Compiled);
-        private static readonly Regex _telefoneRegex   = new(@"^(\(\d{2}\)\d{4}-\d{4}|\d{10})$", RegexOptions.Compiled);
+        private static readonly Regex _telefoneRegex   = new(@"^(\(\d{2}\)\s?\d{4,5}-\d{4}|\d{10,11})$", RegexOptions.Compiled);
 
         // Método para validar e formatar o CPF
         private static bool TryValidarCpf(string? cpf, out string formatado)

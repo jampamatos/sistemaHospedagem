@@ -25,6 +25,7 @@ namespace SistemaHospedagem.Models
             "dd/MM/yyyy hh:mm tt",
             "dd/MM/yyyy h:mm tt",
             // só data
+            "dd/MM/yyyy"
         };
 
         public Reserva(Suite suite, string checkIn, string checkOut)
@@ -68,9 +69,23 @@ namespace SistemaHospedagem.Models
         {
             if (string.IsNullOrWhiteSpace(input)) throw new ArgumentException("Data não pode ser vazia.", paramName);
 
-            if (DateTime.TryParseExact(input, DateFormats, PtBr, DateTimeStyles.None, out var dt)) return dt;
+            // Tenta primeiro todos os formatos, inclusive só data
+            if (DateTime.TryParseExact(input, DateFormats, PtBr, DateTimeStyles.None, out var dt))
+            {
+                // Se o formato usado foi só data (sem hora), define hora padrão 12:00
+                // Verifica se input bate exatamente com o formato só data
+                if (DateTime.TryParseExact(input, "dd/MM/yyyy", PtBr, DateTimeStyles.None, out var dataSemHora))
+                {
+                    // Retorna a data com hora 12:00
+                    return new DateTime(dataSemHora.Year, dataSemHora.Month, dataSemHora.Day, 12, 0, 0);
+                }
+                return dt;
+            }
 
-            throw new ArgumentException($"Data inválida: '{input}'. Formatos válidos: {string.Join(", ", DateFormats)}", paramName);
+            throw new ArgumentException(
+                $"Data inválida: '{input}'. Formatos válidos: {string.Join(", ", DateFormats)}",
+                paramName
+            );
         }
     }
 }

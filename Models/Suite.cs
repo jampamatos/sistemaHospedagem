@@ -33,28 +33,32 @@ namespace SistemaHospedagem.Models
         };
 
         private static readonly CultureInfo PtBr = new("pt-BR");
+        private static int _contador = 0;
+        // Gera um ID único para cada suíte
+        private static string GerarId(TipoSuite tipo)
+        {
+            var prefixo = tipo.ToString().Substring(0, 3).ToUpper();
+            return $"{prefixo}-{++_contador:D4}";
+        }
 
         // Propriedades
-        public Guid Id { get; } = Guid.NewGuid();
+        public string Id { get; }
         public TipoSuite Tipo { get; private set; }
         public int Capacidade { get; private set; }
         public decimal PrecoDiaria { get; private set; }
         private bool Disponivel { get; set; } = true;
 
         // Construtor
-        public Suite(TipoSuite tipo, int capacidadeDesejada)
+        public Suite(TipoSuite tipo)
         {
             // Validações
             if (!CapacidadeMax.ContainsKey(tipo)) throw new ArgumentException("Tipo de suíte inválido.", nameof(tipo));
 
-            var max = CapacidadeMax[tipo];
-            if (capacidadeDesejada < 1 || capacidadeDesejada > max)
-                throw new ArgumentOutOfRangeException(nameof(capacidadeDesejada), $"Capacidade deve ser entre 1 e {max} para o tipo {tipo}.");
-
             // Atribuições
             Tipo = tipo;
-            Capacidade = capacidadeDesejada;
+            Capacidade = CapacidadeMax[tipo];
             PrecoDiaria = PrecosPorTipo[tipo];
+            Id = GerarId(tipo);
         }
 
         // Método para marcar a suíte como indisponível ou disponível
