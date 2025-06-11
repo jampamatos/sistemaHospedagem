@@ -1,36 +1,56 @@
-﻿using SistemaHospedagem.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using SistemaHospedagem.Models;
 
-class Program
+namespace SistemaHospedagem
 {
-    static Hotel hotel = new Hotel();
-
-    static void Main()
+    internal class Program
     {
-        // Carga inicial de suítes
-        hotel.AdicionarSuite(new Suite(TipoSuite.Economica));
-        hotel.AdicionarSuite(new Suite(TipoSuite.Economica));
-        hotel.AdicionarSuite(new Suite(TipoSuite.Economica));
-        hotel.AdicionarSuite(new Suite(TipoSuite.Economica));
-        hotel.AdicionarSuite(new Suite(TipoSuite.Standard));
-        hotel.AdicionarSuite(new Suite(TipoSuite.Standard));
-        hotel.AdicionarSuite(new Suite(TipoSuite.Standard));
-        hotel.AdicionarSuite(new Suite(TipoSuite.Luxo));
-        hotel.AdicionarSuite(new Suite(TipoSuite.Luxo));
-        hotel.AdicionarSuite(new Suite(TipoSuite.Presidencial));
+        private static readonly Hotel hotel = new();
+        private static readonly CultureInfo PtBr = new("pt-BR");
+        private const string DataFormat = "dd/MM/yyyy";
 
-        // Menu de opções
-        while (true)
+        private static void Main()
         {
-            Console.Clear();
-            Console.WriteLine("Sistema de Hotelaria");
-            Console.WriteLine("1. Listar suítes disponíveis");
-            Console.WriteLine("2. Criar reserva");
-            Console.WriteLine("3. Cancelar reserva");
-            Console.WriteLine("4. Sair");
-            Console.Write("Escolha uma opção: ");
+            // 1) Configura cultura brasileira para parsing e formatação
+            CultureInfo.DefaultThreadCurrentCulture = PtBr;
+            CultureInfo.DefaultThreadCurrentUICulture  = PtBr;
 
-            var opcao = Console.ReadLine();
+            // 2) Carga inicial de suítes
+            SeedSuites();
 
+            // 3) Loop principal do menu
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("=== Sistema de Hotelaria ===");
+                Console.WriteLine("1) Listar suítes disponíveis");
+                Console.WriteLine("2) Criar reserva");
+                Console.WriteLine("3) Cancelar reserva");
+                Console.WriteLine("4) Sair");
+                Console.Write("Opção: ");
+
+                var opcao = Console.ReadLine();
+                if (opcao == "4") break;
+
+                ProcessarOpcao(opcao);
+                Console.WriteLine("\nPressione ENTER para voltar ao menu...");
+                Console.ReadLine();
+            }
+        }
+
+        private static void SeedSuites()
+        {
+            // Apenas como exemplo, podemos girar quantidades ou ler de configuração
+            hotel.AdicionarSuite(new Suite(TipoSuite.Economica));
+            hotel.AdicionarSuite(new Suite(TipoSuite.Standard));
+            hotel.AdicionarSuite(new Suite(TipoSuite.Luxo));
+            hotel.AdicionarSuite(new Suite(TipoSuite.Presidencial));
+        }
+
+        private static void ProcessarOpcao(string? opcao)
+        {
             switch (opcao)
             {
                 case "1":
@@ -42,175 +62,151 @@ class Program
                 case "3":
                     CancelarReserva();
                     break;
-                case "4":
-                    return;
                 default:
                     Console.WriteLine("Opção inválida. Tente novamente.");
                     break;
             }
-
-            Console.WriteLine("\nTecle ENTER para voltar ao menu...");
-            Console.ReadKey();
         }
 
-        static void ListarSuitesDisponiveis()
+        private static void ListarSuitesDisponiveis()
         {
             Console.Clear();
-            Console.WriteLine("Suítes Disponíveis:");
-            var suitesDisponiveis = hotel.ListarSuitesDisponiveis();
-            if (suitesDisponiveis.Count == 0)
+            var disponiveis = hotel.ListarSuitesDisponiveis();
+            Console.WriteLine("---- Suítes Disponíveis ----");
+            if (disponiveis.Count == 0)
             {
                 Console.WriteLine("Nenhuma suíte disponível no momento.");
-            }
-            else
-            {
-                foreach (var suite in suitesDisponiveis)
-                {
-                    Console.WriteLine($"ID: {suite.Id}, Tipo: {suite.Tipo}, Capacidade: {suite.Capacidade}, Preço Diária: {suite.PrecoDiaria:C}");
-                }
-            }
-        }
-
-        static void CriarReserva()
-        {
-            Console.Clear();
-            Console.WriteLine("Quantos hóspedes deseja cadastrar?");
-            var quantidade = Console.ReadLine();
-            if (!int.TryParse(quantidade, out int qtd) || qtd <= 0)
-            {
-                Console.WriteLine("Quantidade inválida. Deve ser um número maior que zero.");
                 return;
             }
 
-            var hospedes = new List<Hospede>();
-            for (int i = 0; i < qtd; i++)
+            foreach (var s in disponiveis)
+                Console.WriteLine(s);
+        }
+
+        private static void CriarReserva()
+        {
+            Console.Clear();
+            Console.WriteLine("---- Criar Reserva ----");
+
+            // 1) Leitura de hóspedes
+            int qtd = ReadInt("Quantos hóspedes deseja cadastrar?", min: 1);
+            var hospedes = new List<Hospede>(qtd);
+            for (int i = 1; i <= qtd; i++)
             {
-                Console.WriteLine($"Hóspede {i + 1}:");
-                Console.Write("Nome: ");
-                var nome = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(nome))
-                {
-                    Console.WriteLine("Nome não pode ser vazio.");
-                    i--; // Repetir a iteração para o hóspede atual
-                    continue;
-                }
-                Console.Write("Sobrenome: ");
-                var sobrenome = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(sobrenome))
-                {
-                    Console.WriteLine("Sobrenome não pode ser vazio.");
-                    i--; // Repetir a iteração para o hóspede atual
-                    continue;
-                }
-                Console.Write("CPF: ");
-                var cpf = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(cpf))
-                {
-                    Console.WriteLine("CPF não pode ser vazio.");
-                    i--; // Repetir a iteração para o hóspede atual
-                    continue;
-                }
-                Console.Write("Telefone: ");
-                var telefone = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(telefone))
-                {
-                    Console.WriteLine("Telefone não pode ser vazio.");
-                    i--; // Repetir a iteração para o hóspede atual
-                    continue;
-                }
+                Console.WriteLine($"\nHóspede #{i}");
+                var nome      = ReadString("Nome");
+                var sobrenome = ReadString("Sobrenome");
+                var cpf       = ReadString("CPF");
+                var tel       = ReadString("Telefone");
 
                 try
                 {
-                    var hospede = new Hospede(nome, sobrenome, cpf, telefone);
-                    hospedes.Add(hospede);
+                    hospedes.Add(new Hospede(nome, sobrenome, cpf, tel));
                 }
-                catch (Exception ex)
+                catch (ArgumentException ex)
                 {
-                    Console.WriteLine($"Erro ao cadastrar hóspede: {ex.Message}");
-                    i--; // Repetir a iteração para o hóspede atual
+                    Console.WriteLine($"Erro: {ex.Message}");
+                    i--; // repete essa iteração
                 }
             }
 
-            Console.WriteLine("Selecione uma suíte para reserva:");
-            var suitesDisponiveis = hotel.ListarSuitesDisponiveis();
-            if (suitesDisponiveis.Count == 0)
+            // 2) Escolha de suíte
+            var disponiveis = hotel.ListarSuitesDisponiveis();
+            if (disponiveis.Count == 0)
             {
-                Console.WriteLine("Nenhuma suíte disponível para reserva.");
+                Console.WriteLine("Não há suítes disponíveis.");
                 return;
             }
-            for (int i = 0; i < suitesDisponiveis.Count; i++)
+            Console.WriteLine("\nSelecione a suíte:");
+            for (int i = 0; i < disponiveis.Count; i++)
             {
-                var suite = suitesDisponiveis[i];
-                Console.WriteLine($"{i + 1}. ID: {suite.Id}, Tipo: {suite.Tipo}, Capacidade: {suite.Capacidade}, Preço Diária: {suite.PrecoDiaria:C}");
+                Console.WriteLine($"{i + 1}) {disponiveis[i]}");
             }
+            int idx = ReadInt("Número da suíte", 1, disponiveis.Count) - 1;
+            var suiteEscolhida = disponiveis[idx];
 
-            Console.Write("Escolha uma suíte pelo número: ");
-            var input = Console.ReadLine();
-            if (!int.TryParse(input, out int suiteIndex) || suiteIndex < 1 || suiteIndex > suitesDisponiveis.Count)
-            {
-                Console.WriteLine("Número de suíte inválido.");
-                return;
-            }
+            // 3) Datas
+            var checkIn  = ReadDate($"Data de Check-in ({DataFormat})");
+            var checkOut = ReadDate($"Data de Check-out ({DataFormat})");
 
-            var suiteEscolhida = suitesDisponiveis[suiteIndex - 1];
-
-            // Solicitar datas de check-in e check-out
-            Console.Write("Data de Check-in (dd/MM/yyyy): ");
-            var checkIn = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(checkIn))
-            {
-                Console.WriteLine("Data de check-in não pode ser vazia.");
-                return;
-            }
-            Console.Write("Data de Check-out (dd/MM/yyyy): ");
-            var checkOut = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(checkOut))
-            {
-                Console.WriteLine("Data de check-out não pode ser vazia.");
-                return;
-            }
+            // 4) Criação da reserva
             try
             {
-                var reserva = hotel.CriarReserva(suiteEscolhida, checkIn, checkOut);
+                var reserva = hotel.CriarReserva(suiteEscolhida, checkIn.ToString(DataFormat), checkOut.ToString(DataFormat));
                 reserva.CadastrarHospedes(hospedes);
-                Console.WriteLine($"Reserva criada com sucesso! ID: {reserva.Id}, Total: {reserva.CalcularValorTotal():C}");
+                Console.WriteLine($"\nReserva criada! ID: {reserva.Id}");
+                Console.WriteLine($"Total a pagar: {reserva.CalcularValorTotal():C}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erro ao criar reserva: {ex.Message}");
+                Console.WriteLine($"\nFalha ao criar reserva: {ex.Message}");
             }
         }
 
-        static void CancelarReserva()
+        private static void CancelarReserva()
         {
             Console.Clear();
-            Console.WriteLine("Selecione uma reserva para cancelar:");
+            Console.WriteLine("---- Cancelar Reserva ----");
             var reservas = hotel.ListarReservas();
             if (reservas.Count == 0)
             {
-                Console.WriteLine("Nenhuma reserva encontrada.");
+                Console.WriteLine("Nenhuma reserva ativa.");
                 return;
             }
+
             for (int i = 0; i < reservas.Count; i++)
             {
-                var reserva = reservas[i];
-                Console.WriteLine($"{i + 1}. ID: {reserva.Id}, Suite: {reserva.Suite.Tipo}, Check-in: {reserva.DataCheckIn:dd/MM/yyyy}, Check-out: {reserva.DataCheckOut:dd/MM/yyyy}");
+                var r = reservas[i];
+                Console.WriteLine($"{i + 1}. ID: {r.Id}, Suite: {r.Suite.Tipo}, Check-in: {r.DataCheckIn:dd/MM/yyyy}, Check-out: {r.DataCheckOut:dd/MM/yyyy}");
             }
-            var input = Console.ReadLine();
-            if (!int.TryParse(input, out int reservaIndex) || reservaIndex < 1 || reservaIndex > reservas.Count)
-            {
-                Console.WriteLine("Número de reserva inválido.");
-                return;
-            }
-            var reservaEscolhida = reservas[reservaIndex - 1];
+            int idx = ReadInt("Número da reserva", 1, reservas.Count) - 1;
+            var reserva = reservas[idx];
+
             try
             {
-                hotel.CancelarReserva(reservaEscolhida.Id);
-                Console.WriteLine("Reserva cancelada com sucesso.");
+                hotel.CancelarReserva(reserva.Id);
+                Console.WriteLine("\nReserva cancelada com sucesso!");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erro ao cancelar reserva: {ex.Message}");
+                Console.WriteLine($"\nErro ao cancelar: {ex.Message}");
+            }
+        }
+
+        // ————— Métodos de leitura/validação —————
+
+        private static string ReadString(string prompt)
+        {
+            while (true)
+            {
+                Console.Write($"{prompt}: ");
+                var input = Console.ReadLine()?.Trim();
+                if (!string.IsNullOrWhiteSpace(input))
+                    return input;
+                Console.WriteLine("Entrada não pode ser vazia.");
+            }
+        }
+
+        private static int ReadInt(string prompt, int min = int.MinValue, int max = int.MaxValue)
+        {
+            while (true)
+            {
+                Console.Write($"{prompt}: ");
+                if (int.TryParse(Console.ReadLine(), out int val) && val >= min && val <= max)
+                    return val;
+                Console.WriteLine($"Digite um número válido{(min != int.MinValue ? $" entre {min} e {max}" : "")}.");
+            }
+        }
+
+        private static DateTime ReadDate(string prompt)
+        {
+            while (true)
+            {
+                Console.Write($"{prompt}: ");
+                var txt = Console.ReadLine();
+                if (DateTime.TryParseExact(txt, DataFormat, PtBr, DateTimeStyles.None, out var dt))
+                    return dt;
+                Console.WriteLine($"Formato inválido. Use {DataFormat}.");
             }
         }
     }
